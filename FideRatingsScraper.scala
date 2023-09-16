@@ -30,11 +30,17 @@ object FideRatingsScraper {
 
   def getRatingsPage(): Document = JsoupBrowser().get(FideRatingsUrl)
 
-  case class Ratings(standard: String, rapid: String, blitz: String, date: String)
+  case class Ratings(
+      standard: String,
+      rapid: String,
+      blitz: String,
+      date: String
+  )
 
-  def getRatings(page: Document): List[Ratings] = (page >> elementList(".profile-table_chart-table tbody tr"))
-    .map(tableRow => (tableRow >> texts("td")).toList)
-    .map {
-      case List(date, standard, _, rapid, _, blitz, _) => Ratings(standard, rapid, blitz, date)
-    }
+  def getRatings(page: Document): List[Ratings] =
+    (page >> elementList(".profile-table_chart-table tbody tr"))
+      .map(tableRow => (tableRow >> texts("td")).toList)
+      .map { case List(date, standard, _, rapid, _, blitz, _) =>
+        Ratings(standard, rapid, blitz, date)
+      }
 }
