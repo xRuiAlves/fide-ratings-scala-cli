@@ -14,5 +14,8 @@ hs_err_pid*
 /.bsp/
 /.scala-build/
 
-## MacOS
+# MacOS
 .DS_Store
+
+# IntelliJ
+/.idea/
