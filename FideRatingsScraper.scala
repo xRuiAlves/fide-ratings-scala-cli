@@ -14,39 +14,27 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL.Parse._
-import net.ruippeixotog.scalascraper.model._
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
+import net.ruippeixotog.scalascraper.model._
 
 object FideRatingsScraper {
   final val FideId = "1962000"
-  final val FideRatingsUrl = s"https://ratings.fide.com/profile/$FideId"
+  final val FideRatingsUrl = s"https://ratings.fide.com/profile/$FideId/chart"
 
   def main(args: Array[String]): Unit = {
-    val page = getFideRatingsPage()
+    val page = getRatingsPage()
     val ratings = getRatings(page)
 
-    println(ratings)
+    println(s"Latest ratings: ${ratings.head}")
   }
-//    val res = Http()
-//      .singleRequest(request)
-//      .flatMap(_.entity.toStrict(2.seconds))
-//      .map(_.data.utf8String)
-//      .foreach(println)
 
-//  given system: ActorSystem = ActorSystem()
+  def getRatingsPage(): Document = JsoupBrowser().get(FideRatingsUrl)
 
-//  final lazy val request = HttpRequest(
-//    method = HttpMethods.GET,
-//    uri = "https://ratings.fide.com/profile/1962000"
-//  )
+  case class Ratings(standard: String, rapid: String, blitz: String, date: String)
 
-  def getFideRatingsPage(): Document = JsoupBrowser().get(FideRatingsUrl)
-
-  case class Ratings(standard: Int, rapid: Int, blitz: Int)
-
-  def getRatings(page: Document): Ratings = (1 to 3)
-    .map(i => page >> text(s"div.profile-top-rating-data:nth-child($i)"))
-    .map(_.toString.split(" ")(1).toInt) match {
-    case Seq(a, b, c) => Ratings(a, b, c)
-  }
+  def getRatings(page: Document): List[Ratings] = (page >> elementList(".profile-table_chart-table tbody tr"))
+    .map(tableRow => (tableRow >> texts("td")).toList)
+    .map {
+      case List(date, standard, _, rapid, _, blitz, _) => Ratings(standard, rapid, blitz, date)
+    }
 }
