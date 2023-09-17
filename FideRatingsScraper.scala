@@ -44,7 +44,7 @@ object FideRatingsScraper {
       .map(tableRow => (tableRow >> texts("td")).toList)
       .map {
         case List(date, standard, _, rapid, _, blitz, _) => Ratings(standard, rapid, blitz, date)
-        case _ => Ratings.empty
+        case _                                           => Ratings.empty
       }
 
   def error(message: String) = {
